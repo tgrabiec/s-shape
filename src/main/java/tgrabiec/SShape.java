@@ -48,8 +48,6 @@ public class SShape {
         final SigmoidPanel displayPanel = new SigmoidPanel(settings);
         frame.add(displayPanel, BorderLayout.CENTER);
 
-        JPanel panel = new JPanel(new GridBagLayout());
-
         final JLabel blockSizeLabel = new JLabel();
         JScrollBar blockSizeScrollBar = new JScrollBar(Adjustable.HORIZONTAL, 1, 1, 1, 2000);
         blockSizeScrollBar.addAdjustmentListener(new AdjustmentListener() {
@@ -86,6 +84,7 @@ public class SShape {
         });
         evictionRateScrollBar.setValue((int) (settings.getEvictionRate() * 100));
 
+        JPanel panel = new JPanel();
         GroupLayout layout = new GroupLayout(panel);
         panel.setLayout(layout);
         layout.setAutoCreateGaps(true);
