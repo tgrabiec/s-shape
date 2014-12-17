@@ -182,7 +182,7 @@ public class SShape {
                 blocks = new int[settings.getBlockCount()];
             }
             Arrays.fill(blocks, 0);
-            for (int i = 0; i < floor(itemCount * settings.getEvictionRate()); i++) {
+            for (int i = 0; i < floor(itemCount * (1-settings.getEvictionRate())); i++) {
                 blocks[items[i]]++;
             }
 
