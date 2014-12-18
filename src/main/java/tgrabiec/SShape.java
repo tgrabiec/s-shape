@@ -62,7 +62,7 @@ public class SShape {
         frame.add(displayPanel, BorderLayout.CENTER);
 
         final JLabel blockSizeLabel = new JLabel();
-        JScrollBar blockSizeScrollBar = new JScrollBar(Adjustable.HORIZONTAL, 1, 1, 1, 2000);
+        JScrollBar blockSizeScrollBar = new JScrollBar(Adjustable.HORIZONTAL, 1, 1, 1, 2001);
         blockSizeScrollBar.addAdjustmentListener(new AdjustmentListener() {
             @Override
             public void adjustmentValueChanged(AdjustmentEvent adjustmentEvent) {
@@ -74,7 +74,7 @@ public class SShape {
         blockSizeScrollBar.setValue(settings.getBlockSize());
 
         final JLabel blockCountLabel = new JLabel();
-        JScrollBar blockCountScrollBar = new JScrollBar(Adjustable.HORIZONTAL, 1, 1, 1, 2000);
+        JScrollBar blockCountScrollBar = new JScrollBar(Adjustable.HORIZONTAL, 1, 1, 1, 2001);
         blockCountScrollBar.addAdjustmentListener(new AdjustmentListener() {
             @Override
             public void adjustmentValueChanged(AdjustmentEvent adjustmentEvent) {
@@ -86,7 +86,7 @@ public class SShape {
         blockCountScrollBar.setValue(settings.getBlockCount());
 
         final JLabel evictionRateLabel = new JLabel();
-        JScrollBar evictionRateScrollBar = new JScrollBar(Adjustable.HORIZONTAL, 0, 1, 0, 100);
+        JScrollBar evictionRateScrollBar = new JScrollBar(Adjustable.HORIZONTAL, 0, 1, 0, 101);
         evictionRateScrollBar.addAdjustmentListener(new AdjustmentListener() {
             @Override
             public void adjustmentValueChanged(AdjustmentEvent adjustmentEvent) {
@@ -98,7 +98,7 @@ public class SShape {
         evictionRateScrollBar.setValue((int) (settings.getEvictionRate() * 100));
 
         final JLabel writeRateLabel = new JLabel("Writes (0%)");
-        JScrollBar writeRateScrollBar = new JScrollBar(Adjustable.HORIZONTAL, 0, 1, 0, 100);
+        JScrollBar writeRateScrollBar = new JScrollBar(Adjustable.HORIZONTAL, 0, 1, 0, 101);
         writeRateScrollBar.addAdjustmentListener(new AdjustmentListener() {
             @Override
             public void adjustmentValueChanged(AdjustmentEvent adjustmentEvent) {
