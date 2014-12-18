@@ -178,7 +178,7 @@ public class SShape {
             g.setColor(Color.BLACK);
             int fontHeight = g.getFontMetrics(g.getFont()).getHeight();
             g.drawString("min = " + getMinUtilization(), 0, fontHeight);
-            g.drawString("min / (1 - min) = " + 1.0 / (1.0 - getMinUtilization()), 0, fontHeight * 2);
+            g.drawString("min / (1 - min) = " + getMinUtilization() / (1.0 - getMinUtilization()), 0, fontHeight * 2);
             g.setColor(Color.GRAY);
             g.drawLine(0, getHeight() / 2, getWidth(), getHeight() / 2);
             g.drawLine(getWidth() / 2, 0, getWidth() / 2, getHeight());
