@@ -13,6 +13,11 @@ class Settings {
     private int blockSize = 100;
     private int blockCount = 1000;
     private double evictionRate = 0.5;
+    private double writeRate = 0.0;
+
+    public int getItemCount() {
+        return blockSize * blockCount;
+    }
 
     public int getBlockSize() {
         return blockSize;
@@ -36,6 +41,14 @@ class Settings {
 
     public void setEvictionRate(double evictionRate) {
         this.evictionRate = evictionRate;
+    }
+
+    public double getWriteRate() {
+        return writeRate;
+    }
+
+    public void setWriteRate(double writeRate) {
+        this.writeRate = writeRate;
     }
 }
 
@@ -84,6 +97,18 @@ public class SShape {
         });
         evictionRateScrollBar.setValue((int) (settings.getEvictionRate() * 100));
 
+        final JLabel writeRateLabel = new JLabel("Writes (0%)");
+        JScrollBar writeRateScrollBar = new JScrollBar(Adjustable.HORIZONTAL, 0, 1, 0, 100);
+        writeRateScrollBar.addAdjustmentListener(new AdjustmentListener() {
+            @Override
+            public void adjustmentValueChanged(AdjustmentEvent adjustmentEvent) {
+                writeRateLabel.setText("Writes (" + adjustmentEvent.getValue() + "%)");
+                settings.setWriteRate((double) adjustmentEvent.getValue() / 100);
+                displayPanel.onSettingsChanged();
+            }
+        });
+        writeRateScrollBar.setValue((int) (settings.getWriteRate() * 100));
+
         JPanel panel = new JPanel();
         GroupLayout layout = new GroupLayout(panel);
         panel.setLayout(layout);
@@ -95,11 +120,13 @@ public class SShape {
                         .addComponent(blockSizeLabel)
                         .addComponent(blockCountLabel)
                         .addComponent(evictionRateLabel)
+                        .addComponent(writeRateLabel)
                 )
                 .addGroup(layout.createParallelGroup()
                         .addComponent(blockSizeScrollBar)
                         .addComponent(blockCountScrollBar)
                         .addComponent(evictionRateScrollBar)
+                        .addComponent(writeRateScrollBar)
                 )
         );
 
@@ -116,6 +143,10 @@ public class SShape {
                         .addComponent(evictionRateLabel)
                         .addComponent(evictionRateScrollBar)
                 )
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                        .addComponent(writeRateLabel)
+                        .addComponent(writeRateScrollBar)
+                )
         );
 
         frame.add(panel, BorderLayout.NORTH);
@@ -131,10 +162,12 @@ public class SShape {
         private final Settings settings;
         private final Random random = new Random();
         private int[] blocks;
+        private int[] items;
 
         public SigmoidPanel(Settings settings) {
             this.settings = settings;
             blocks = new int[settings.getBlockCount()];
+            items = new int[settings.getItemCount()];
             recalculate();
         }
 
@@ -164,32 +197,73 @@ public class SShape {
         }
 
         private void recalculate() {
-            int itemCount = settings.getBlockSize() * settings.getBlockCount();
-            int[] items = new int[itemCount];
-
-            int pos = 0;
-            for (int i = 0; i < settings.getBlockCount(); i++) {
-                for (int j = 0; j < settings.getBlockSize(); j++) {
-                    items[pos++] = i;
-                }
+            if (items.length != settings.getItemCount()) {
+                items = new int[settings.getItemCount()];
+            } else {
+                Arrays.fill(items, 0);
             }
 
-            for (int i = items.length; i > 1; i--) {
-                int i2 = random.nextInt(i);
-                int t = items[i - 1];
-                items[i - 1] = items[i2];
-                items[i2] = t;
+            if (settings.getWriteRate() == 0) {
+                int pos = 0;
+                for (int i = 0; i < settings.getBlockCount(); i++) {
+                    for (int j = 0; j < settings.getBlockSize(); j++) {
+                        items[pos++] = i;
+                    }
+                }
+
+                for (int i = items.length; i > 1; i--) {
+                    int i2 = random.nextInt(i);
+                    int t = items[i - 1];
+                    items[i - 1] = items[i2];
+                    items[i2] = t;
+                }
+            } else {
+                int itemsWritten = 0;
+                int currentBlock = 0;
+                int itemsInBlockLeft = settings.getBlockSize();
+
+                long[] items_with_time = new long[items.length];
+                int now = 0;
+
+                while (itemsWritten < settings.getItemCount()) {
+                    boolean isWrite = random.nextDouble() < settings.getWriteRate();
+                    if (isWrite || itemsWritten == 0) {
+                        items_with_time[itemsWritten] = currentBlock | ((long)now << 32);
+                        itemsWritten++;
+                        itemsInBlockLeft--;
+                        if (itemsInBlockLeft == 0) {
+                            currentBlock++;
+                            itemsInBlockLeft = settings.getBlockSize();
+                        }
+                    } else {
+                        int index = random.nextInt(itemsWritten);
+                        items_with_time[index] = items_with_time[index] & 0xffffffffl | ((long)now << 32);
+                    }
+                    now++;
+                }
+
+                Arrays.sort(items_with_time);
+
+                for (int i = 0; i < items.length; i++) {
+                    items[i] = (int) (items_with_time[i] & 0xffffffffl);
+                }
             }
 
             if (blocks.length != settings.getBlockCount()) {
                 blocks = new int[settings.getBlockCount()];
             }
-            Arrays.fill(blocks, 0);
-            for (int i = 0; i < floor(itemCount * (1-settings.getEvictionRate())); i++) {
-                blocks[items[i]]++;
+
+            Arrays.fill(blocks, settings.getBlockSize());
+
+            for (int i = 0; i < floor(settings.getItemCount() * settings.getEvictionRate()); i++) {
+                blocks[items[i]]--;
             }
 
             Arrays.sort(blocks);
+        }
+
+        public double getMinUtilization() {
+            return (double)blocks[0] / settings.getBlockSize();
         }
 
         public void onSettingsChanged() {
